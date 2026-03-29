@@ -1,6 +1,7 @@
 template <typename Key, typename Val>
-HashTableOpen<Key, Val>::HashTableOpen(int i) {
-    // TODO
+HashTableOpen<Key, Val>::HashTableOpen(int i) : M(i), ht(new LinkedList<Record>*[M]) {
+    // DONE
+    for (int i = 0; i < M; ++i)  ht[i] = new LinkedList<Record>();
 }
 
 template <typename Key, typename Val>
@@ -19,9 +20,13 @@ HashTableOpen<Key, Val>& HashTableOpen<Key, Val>::operator=
     return *this;
 }
 
+// is clear actually enough? double check....no, need to del ht ya?
 template <typename Key, typename Val>
 HashTableOpen<Key, Val>::~HashTableOpen() {
-    // TODO
+    // DONE
+    clear();
+    for (int i = 0; i < M; ++i) delete ht[i];
+    delete[] ht;
 }
 
 template <typename Key, typename Val>
@@ -98,11 +103,6 @@ void HashTableOpen<Key, Val>::copy(const HashTableOpen<Key, Val>& copyObj) {
 }
 
 template <typename Key, typename Val>
-Val HashTableOpen<Key, Val>::find(const Key& k) const {
-    // TODO
-}
-
-template <typename Key, typename Val>
 int HashTableOpen<Key, Val>::hash(const Key& k) const {
     // how long should each fold be
     // changing this means you should also change the reinterpeted data type
@@ -151,16 +151,52 @@ int HashTableOpen<Key, Val>::hash(const Key& k) const {
 }
 
 template <typename Key, typename Val>
+Val HashTableOpen<Key, Val>::find(const Key& k) const {
+    // TODO
+    int index = hash(k);
+    int findLen = ht[index]->getLength();
+    for (int i = 0; i < findLen; ++i) {
+        const Record& tempRec = ht[index]->getElement(i);
+        if (k == tempRec.k) return tempRec.v;
+    }
+
+    throw string("Key not found in table");
+}
+
+// TODO....check for existing/dupe keys? either refuse or change v?
+template <typename Key, typename Val>
 void HashTableOpen<Key, Val>::insert(const Key& k, const Val& v) {
     // TODO
+    int index = hash(k);
+    // Record newRec = new Record(k,v);  cannot convert R* to R?
+    ht[index]->append(Record(k,v));
 }
 
 template <typename Key, typename Val>
 void HashTableOpen<Key, Val>::remove(const Key& k) {
-    // TODO
+    // TODO? helper "find if index" function?
+    int index = hash(k);
+    int listLen = ht[index]->getLength();
+
+    for (int i = 0; i < listLen; ++i) {
+        const Record& tempRec = ht[index]->getElement(i);
+        if (k == tempRec.k) {
+            ht[index]->remove(i);
+            return;
+        }
+    }
+
+    throw string("Key not found in table. Cannot remove.");
 }
 
 template <typename Key, typename Val>
 int HashTableOpen<Key, Val>::size() const {
-    // TODO
+    // DONE?
+    int length = 0;
+
+    for (int i = 0; i < M; ++i) {
+        length += ht[i]->getLength();
+    }
+
+    return length;
 }
